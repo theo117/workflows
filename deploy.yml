@@ -4,21 +4,23 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@v1.2.0
+      - name: Checkout
+        uses: actions/checkout@v4
 
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
-
           script: |
             set -e
 
@@ -29,9 +31,5 @@ jobs:
             docker compose -f compose.prod.yml build
 
             docker compose -f compose.prod.yml up -d
-
-            sleep 10
-
-            docker ps
 
             docker image prune -f
