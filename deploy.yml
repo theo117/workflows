@@ -1,0 +1,36 @@
+name: Deploy TradeFlow
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+  set -e
+
+  cd ~/server-infrastructure/apps/TradeFlow_SA
+
+  git fetch origin
+  git reset --hard origin/main
+
+  docker compose -f compose.prod.yml build
+
+  docker compose -f compose.prod.yml up -d
+
+  docker image prune -f
